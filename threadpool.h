@@ -18,16 +18,14 @@ public:
     void submit(F && f)
     {
         std::lock_guard<std::mutex> lock(sync_lock);
-        jobs.push_back(std::move(f));
+        jobs.emplace_back(std::forward<F>(f));
     }
 
     template <class F, typename ...Args>
     void submit(F && f, Args&&... args)
     {
         std::lock_guard<std::mutex> lock(sync_lock);
-        jobs.push_back([=](){
-            f(args...);
-        });
+        jobs.push_back(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
     }
 
 private:
